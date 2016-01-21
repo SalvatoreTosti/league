@@ -33,6 +33,8 @@ public class Movement : MonoBehaviour {
 		powerInput = 0;
 		turnInput = 0f;
 		brakeInput = 0;
+		normalsLerpTime = 1f;
+		//currentNormalsLerpTime = 0;
 	}
 	
 	// Update is called once per frame
@@ -43,10 +45,10 @@ public class Movement : MonoBehaviour {
 		updateRotation ();
 		turnInput = Input.GetAxis ("Horizontal");
 		Debug.DrawRay (carFront.transform.position, turnVector*turnInput, Color.green);
-		Debug.DrawRay (carFront.transform.position, Vector3.up, Color.cyan);
-		Debug.DrawRay (carBack.transform.position, Vector3.up, Color.cyan);
-		Debug.DrawRay (carLeft.transform.position, Vector3.up, Color.cyan);
-		Debug.DrawRay (carRight.transform.position, Vector3.up, Color.cyan);
+		Debug.DrawRay (carFront.transform.position, transform.up, Color.cyan);
+		Debug.DrawRay (carBack.transform.position, transform.up, Color.cyan);
+		Debug.DrawRay (carLeft.transform.position, transform.up, Color.cyan);
+		Debug.DrawRay (carRight.transform.position, transform.up, Color.cyan);
 
 
 
@@ -61,25 +63,39 @@ public class Movement : MonoBehaviour {
 	}
 	void FixedUpdate(){
 		Rigidbody carRigidbody = GetComponent<Rigidbody> ();
-		Vector3 forwardForce = forwardVector * powerInput * powerMultipler;
+		Vector3 forwardForce = Vector3.forward * powerInput * powerMultipler;
 		carRigidbody.AddForce (forwardForce, ForceMode.Acceleration);
 
-		Vector3 turnForce = Vector3.up * turnInput * powerMultipler;
-		print (turnForce);
+		Vector3 turnForce = transform.up * turnInput * powerMultipler;
+
 		carRigidbody.AddTorque (turnForce, ForceMode.Acceleration);
 		
 		
 		RaycastHit hit;
 		Ray ray = new Ray (decorativeFront.transform.position, Vector3.down);
-		Physics.Raycast (ray, out hit, 10f);
+		Physics.Raycast (ray, out hit, 9000f);
 
-		
-//		currentNormalsLerpTime += Time.deltaTime;
-//		if (currentNormalsLerpTime > normalsLerpTime) {
-//			currentNormalsLerpTime = normalsLerpTime;
+
+//		print (transform.up);
+//		print (hit.normal);
+//		print (currentNormalsLerpTime);
+//		print (transform.up == hit.normal);
+
+		//vectorsClose (transform.up, hit.normal,true);
+
+//		if (!vectorsClose (transform.up, hit.normal,true)) {
+//			currentNormalsLerpTime += Time.deltaTime;
+//			float perc = currentNormalsLerpTime / normalsLerpTime;
+//			transform.up = Vector3.Lerp (transform.up, hit.normal, perc);
+//		} else {
+//			currentNormalsLerpTime = 0;
 //		}
-//		float perc = currentNormalsLerpTime / normalsLerpTime;
-//		transform.up = Vector3.Lerp(transform.up, hit.normal, perc);
+
+		//if (currentNormalsLerpTime > normalsLerpTime) {
+		//	currentNormalsLerpTime = normalsLerpTime;
+		//}
+
+
 
 		//transform.up = Vector3.Lerp(transform.up, hit.normal, Time.deltaTime*30);
 
@@ -89,6 +105,17 @@ public class Movement : MonoBehaviour {
 //		Quaternion target = Quaternion.Euler (0, 0, tiltAngle);
 //		Transform objectTransform = GetComponent<Transform> ();
 //		objectTransform.rotation = Quaternion.Slerp (objectTransform.rotation,target,Time.deltaTime *smooth);
+	}
+
+	private bool vectorsClose(Vector3 vectorA, Vector3 vectorB,bool debug){
+		float percDiffAllowed = 0.05f;
+		if ((vectorA - vectorB).sqrMagnitude <= (vectorA * percDiffAllowed).sqrMagnitude) {
+			if(debug){Debug.Log("Less than 5% difference.");}
+			return true;
+		} else {
+			if(debug){Debug.Log("More than 5% difference.");}
+			return false;
+		}
 	}
 
 	private void updateForward(){

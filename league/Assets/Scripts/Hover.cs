@@ -4,7 +4,7 @@ using System.Collections;
 public class Hover : MonoBehaviour {
 //	public float speed = 90f;
 //	public float turnSpeed = 5f;
-	public float hoverForce = 65f;
+	public float hoverForce = 100f;
 	public float hoverHeight = 3.5f;
 
 //	private float powerInput;
@@ -46,8 +46,8 @@ public class Hover : MonoBehaviour {
 		RaycastHit backHit;
 		//offset = 0.1f;
 		Vector3 pos = transform.position;
-		Physics.Raycast (pos + offset * transform.forward, -Vector3.up, out frontHit);
-		Physics.Raycast (pos - offset * transform.forward, -Vector3.up, out backHit);
+		Physics.Raycast (pos + offset * transform.forward, -transform.up, out frontHit);
+		Physics.Raycast (pos - offset * transform.forward, -transform.up, out backHit);
 
 		RaycastHit hit;
 		groundHit = Physics.Raycast (ray, out hit, hoverHeight);
@@ -56,8 +56,9 @@ public class Hover : MonoBehaviour {
 		{
 			hitDistance = hit.distance;
 			proportionalHeight = (hoverHeight - hit.distance) / hoverHeight;
-			Vector3 appliedHoverForce = Vector3.up * proportionalHeight * hoverForce;
-			carRigidbody.AddForce(appliedHoverForce, ForceMode.Acceleration);
+			Vector3 appliedHoverForce = hit.normal * hoverForce * proportionalHeight;
+			carRigidbody.AddForce(appliedHoverForce, ForceMode.Force);
+
 		}
 	}
 }
